@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="index.js"></script>
+    <script src="mipsum.min.js"></script>
+    <title>Traveling Blog</title>
+</head>
+
+<body>
+    <select name="filter" id="filterByAuthor" onchange="filter()">
+        <option value=null>filter by author...</option>
+    </select>
+    <div id="container"></div>
+    <form id="add-post">
+        <label for="title">Title</label><br>
+        <input type="text" id="title" name="title"><br>
+        <label for="body">Post Body</label><br>
+        <input type="text" id="body" name="body"><br>
+    </form>
+    <label for="selectAuthor">Author</label><br>
+    <select id="selectAuthor" name="author" form="add-post"></select>
+    <input type="submit" form="add-post">
+</body>
+<script>
+    var container = document.getElementById("container")
+    var select = document.getElementById("filterByAuthor")
+    var addSelect = document.getElementById("selectAuthor")
+    var form = document.getElementById("add-post")
+
+    fetchUsers("https://jsonplaceholder.typicode.com/users").then((users) => {
+        for (const i in users) {
+            let option1 = document.createElement("option")
+            option1.textContent = users[i].name
+            option1.setAttribute("value", users[i].id)
+            select.appendChild(option1)
+
+            let option2 = document.createElement("option")
+            option2.textContent = users[i].name
+            option2.setAttribute("value", users[i].id)
+            addSelect.appendChild(option2)
+        }
+    })
+
+    fetchPosts("https://jsonplaceholder.typicode.com/posts").then((posts) => {
+        for (const i in posts) {
+            let postDiv = document.createElement('div')
+            postDiv.setAttribute('id', 'article')
+
+            let title = document.createElement('h1')
+            title.textContent = posts[i].title
+
+            let author = document.createElement('p')
+            fetchUsers("https://jsonplaceholder.typicode.com/users/" + posts[i].userId).then((user) => author.textContent = "Author: " + user.name)
+
+            let body = document.createElement('p')
+            const lorem = mIpsum({ pNum: 20, resultType: 'text' })
+            body.textContent = lorem
+
+            let commentLabel = document.createElement('label')
+            commentLabel.textContent = "Comments:"
+            let commentsSection = document.createElement('ul')
+
+            fetchComments("https://jsonplaceholder.typicode.com/comments/").then((comments) => {
+                for (const j in comments) {
+                    if (comments[j].postId == posts[i].id) {
+                        let comment = document.createElement('li')
+                        comment.textContent = comments[j].body
+
+                        commentsSection.appendChild(comment)
+                    }
+                }
+            })
+
+            postDiv.appendChild(title)
+            postDiv.appendChild(author)
+            postDiv.appendChild(body)
+            postDiv.appendChild(commentLabel)
+            postDiv.appendChild(commentsSection)
+
+            container.appendChild(postDiv)
+        }
+    })
+
+    form.addEventListener('submit', (event) => {
+        event.preventDefault()
+
+        var userId = form.elements['selectAuthor'].value
+        var id = 1000
+        var title1 = form.elements['title'].value
+        var body1 = form.elements['body'].value
+
+        var post = {
+            "userId": userId,
+            "id": id,
+            "title": title1,
+            "body": body1
+        }
+
+        let postDiv = document.createElement('div')
+        postDiv.setAttribute('id', 'article')
+
+        let title = document.createElement('h1')
+        title.textContent = post.title
+
+        let author = document.createElement('p')
+        fetchUsers("https://jsonplaceholder.typicode.com/users/" + post.userId).then((user) => author.textContent = "Author: " + user.name)
+
+        let body = document.createElement('p')
+        body.textContent = post.body
+
+        postDiv.appendChild(title)
+        postDiv.appendChild(author)
+        postDiv.appendChild(body)
+
+        container.appendChild(postDiv)
+
+        form.submit()
+    })
+
+    function filter() {
+        container.innerHTML = ''
+
+        fetchPosts("https://jsonplaceholder.typicode.com/posts").then((posts) => {
+            if (select.value == "null") {
+                for (const i in posts) {
+                    let postDiv = document.createElement('div')
+                    postDiv.setAttribute('id', 'article')
+
+                    let title = document.createElement('h1')
+                    title.textContent = posts[i].title
+
+                    let author = document.createElement('p')
+                    fetchUsers("https://jsonplaceholder.typicode.com/users/" + posts[i].userId).then((user) => author.textContent = "Author: " + user.name)
+
+                    let body = document.createElement('p')
+                    const lorem = mIpsum({ pNum: 20, resultType: 'text' })
+                    body.textContent = lorem
+
+                    let commentLabel = document.createElement('label')
+                    commentLabel.textContent = "Comments:"
+                    let commentsSection = document.createElement('ul')
+
+                    fetchComments("https://jsonplaceholder.typicode.com/comments/").then((comments) => {
+                        for (const j in comments) {
+                            if (comments[j].postId == posts[i].id) {
+                                let comment = document.createElement('li')
+                                comment.textContent = comments[j].body
+
+                                commentsSection.appendChild(comment)
+                            }
+                        }
+                    })
+
+                    postDiv.appendChild(title)
+                    postDiv.appendChild(author)
+                    postDiv.appendChild(body)
+                    postDiv.appendChild(commentLabel)
+                    postDiv.appendChild(commentsSection)
+
+                    container.appendChild(postDiv)
+                }
+            }
+            else {
+                for (const i in posts) {
+                    if (posts[i].userId == select.value) {
+                        let postDiv = document.createElement('div')
+                        postDiv.setAttribute('id', 'article')
+
+                        let title = document.createElement('h1')
+                        title.textContent = posts[i].title
+
+                        let author = document.createElement('p')
+                        fetchUsers("https://jsonplaceholder.typicode.com/users/" + posts[i].userId).then((user) => author.textContent = "Author: " + user.name)
+
+                        let body = document.createElement('p')
+                        const lorem = mIpsum({ pNum: 20, resultType: 'text' })
+                        body.textContent = lorem
+
+                        let commentLabel = document.createElement('label')
+                        commentLabel.textContent = "Comments:"
+                        let commentsSection = document.createElement('ul')
+
+                        fetchComments("https://jsonplaceholder.typicode.com/comments/").then((comments) => {
+                            for (const j in comments) {
+                                if (comments[j].postId == posts[i].id) {
+                                    let comment = document.createElement('li')
+                                    comment.textContent = comments[j].body
+
+                                    commentsSection.appendChild(comment)
+                                }
+                            }
+                        })
+
+                        postDiv.appendChild(title)
+                        postDiv.appendChild(author)
+                        postDiv.appendChild(body)
+                        postDiv.appendChild(commentLabel)
+                        postDiv.appendChild(commentsSection)
+
+                        container.appendChild(postDiv)
+                    }
+                }
+            }
+
+        })
+    }
+
+</script>
+
+</html>
